@@ -78,30 +78,26 @@ module.exports = (robot) ->
     reaction[Math.floor(Math.random() * (reaction.length))]
 
   #
-  # Auth functions
+  # Auth methods
   #
   getTokenPath = (user) ->
     token_dir + "#{user}-credentials.json"
 
   # Check if we have previously stored a token for user speaking
   authorize = (callback, args) ->
-    robot.emit('google:authenticate', msg, function(err, auth) {
-      oauth2Client = auth
-      callback args
-    });
-    # fs.readFile getTokenPath(args.user), (err, token) ->
-    #   if err
-    #     console.log "no token found #{getTokenPath(args.user)}"
-    #     authUrl = oauth2Client.generateAuthUrl
-    #       access_type: 'offline'
-    #       scope: [ 'https://www.googleapis.com/auth/calendar.readonly' ]
-    #
-    #     awaiting_code.push(args.user) if args.user not in awaiting_code
-    #     messageUser args.user, "Authorize this app by visiting this url: #{authUrl} then give me the code please :simple_smile:"
-    #
-    #   else
-    #     oauth2Client.credentials = JSON.parse(token)
-    #     callback args
+    fs.readFile getTokenPath(args.user), (err, token) ->
+      if err
+        console.log "no token found #{getTokenPath(args.user)}"
+        authUrl = oauth2Client.generateAuthUrl
+          access_type: 'offline'
+          scope: [ 'https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', ]
+
+        awaiting_code.push(args.user) if args.user not in awaiting_code
+        messageUser args.user, "Authorize this app by visiting this url: #{authUrl} then give me the code please :simple_smile:"
+
+      else
+        oauth2Client.credentials = JSON.parse(token)
+        callback args
 
   storeToken = (token, token_path) ->
     try
@@ -113,7 +109,7 @@ module.exports = (robot) ->
     console.log 'Token stored to ' + token_path
 
   #
-  # talk functions
+  # talk methods
   #
   messageUser = (user, message) ->
     console.log "> @#{user}: #{message}"
