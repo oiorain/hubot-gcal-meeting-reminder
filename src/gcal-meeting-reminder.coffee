@@ -5,9 +5,9 @@
 #   LIST_OF_ENV_VARS_TO_SET
 #
 # Commands:
-#   hubot send me meeting reminders
-#   hubot stop sending me meeting reminders
-#   hubot Who's getting reminders?
+#   Gcal Meeting Reminder - send me meeting reminders
+#   Gcal Meeting Reminder - stop sending me meeting reminders
+#   Gcal Meeting Reminder - Who's getting reminders?
 #
 # Notes:
 #   <optional notes required for the script>
@@ -90,9 +90,9 @@ module.exports = (robot) ->
         console.log "no token found #{getTokenPath(args.user)}"
         authUrl = oauth2Client.generateAuthUrl
           access_type: 'offline'
-          scope: [ 'https://www.googleapis.com/auth/calendar.readonly' ]
+          scope: [ 'https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/userinfo.profile' ]
 
-        awaiting_code.push(args.user)
+        awaiting_code.push(args.user) if args.user not in awaiting_code
         messageUser args.user, "Authorize this app by visiting this url: #{authUrl} then give me the code please :simple_smile:"
 
       else
@@ -125,7 +125,7 @@ module.exports = (robot) ->
 
     if user not in users
       # Add user to perstisted list
-      users.push user
+      users.push user if user not in users
       robot.brain.set('reminder_users', users)
 
       messageUser user, "Sure, #{user}. I'll send your meeting reminders from now on.\nYou can stop anytime by telling me \"stop sending me meeting reminders\"."
@@ -183,7 +183,7 @@ module.exports = (robot) ->
       oauth2Client.getToken code, (err, token) ->
         if err
           console.log 'Error while trying to retrieve access token', err
-          msg.send "Sorry I couldn't retrieve the token to give you access :sad:."
+          msg.send "Sorry I couldn't retrieve the token to give you access :cry:."
           return
         oauth2Client.credentials = token
         storeToken token, getTokenPath user
@@ -233,8 +233,7 @@ module.exports = (robot) ->
 
           # has startTime = event is not all day long
           # not creator.self = someone else created the event
-          # if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
-          if event.start.dateTime and event.attendees and low_diff <= 0 and high_diff >= 60 and event.status == "confirmed"
+          if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
             console.log "#{JSON.stringify(event)}"
             sendReminder robot, args.user, event
 
