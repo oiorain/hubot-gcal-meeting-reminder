@@ -1,7 +1,7 @@
 {
   "name": "hubot-gcal-meeting-reminder",
   "description": "A hubot script that reminds you of upcoming meeting",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Marion Bouguet <marion.bouguet@gmail.com>",
   "license": "MIT",
   "keywords": "hubot, hubot-scripts",
