@@ -17,6 +17,8 @@
   },
 
   "dependencies": {
+    "googleapis": "^8.2.0",
+    "google-auth-library": "^0.9.8"
   },
 
   "peerDependencies": {

@@ -28,3 +28,10 @@ hubot>> hello!
 ## NPM Module
 
 https://www.npmjs.com/package/hubot-gcal-meeting-reminder
+
+
+
+Settings:
+
+upload the result of your newly setup app to gcal-meeting-reminder.json
+explain format needs web:
