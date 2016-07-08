@@ -90,7 +90,7 @@ module.exports = (robot) ->
         console.log "no token found #{getTokenPath(args.user)}"
         authUrl = oauth2Client.generateAuthUrl
           access_type: 'offline'
-          scope: [ 'https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/userinfo.profile' ]
+          scope: [ 'https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/userinfo.profile',  'https://www.googleapis.com/auth/userinfo.email']
 
         awaiting_code.push(args.user) if args.user not in awaiting_code
         messageUser args.user, "Authorize this app by visiting this url: #{authUrl} then give me the code please :simple_smile:"
