@@ -17,11 +17,11 @@
 
 
 # for local dev
-try
-  {Robot,Adapter,TextMessage,User} = require 'hubot'
-catch
-  prequire = require('parent-require')
-  {Robot,Adapter,TextMessage,User} = prequire 'hubot'
+# try
+#   {Robot,Adapter,TextMessage,User} = require 'hubot'
+# catch
+#   prequire = require('parent-require')
+#   {Robot,Adapter,TextMessage,User} = prequire 'hubot'
 
 module.exports = (robot) ->
   fs = require 'fs'
@@ -43,7 +43,9 @@ module.exports = (robot) ->
   oauth2Client = false
 
   # retrieving settings from gcal-meeting-reminder.json
+  console.log "loading configuration"
   try
+    console.log "attempting to load the setting file #{settings_file}"
     fs.readFile settings_file, (err, contents) ->
       if err
         throw err
