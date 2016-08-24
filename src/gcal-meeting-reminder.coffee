@@ -13,7 +13,7 @@
 #   <optional notes required for the script>
 #
 # Author:
-#   Marion Bouguet <marion.bouguet@gmail.com>
+#   Marion Kamoike-Bouguet <marion.bouguet@gmail.com>
 
 
 # for local dev
@@ -51,6 +51,7 @@ module.exports = (robot) ->
       settings = JSON.parse(contents)
       auth = new googleAuth
       oauth2Client = new (auth.OAuth2)(settings.web.client_id, settings.web.client_secret, settings.web.redirect_uris[0])
+      console.info "Found a config file. It contains: #{JSON.stringify(oauth2Client)}"
   catch e
     console.warn "Could not find or read #{settings_file} file: #{err}"
 
@@ -81,13 +82,15 @@ module.exports = (robot) ->
   # Auth methods
   #
   getTokenPath = (user) ->
+    console.info "Config file for user is #{token_dir}#{user}-credentials.json";
     token_dir + "#{user}-credentials.json"
 
   # Check if we have previously stored a token for user speaking
   authorize = (callback, args) ->
+    console.info "-> authorize";
     fs.readFile getTokenPath(args.user), (err, token) ->
       if err
-        console.log "no token found #{getTokenPath(args.user)}"
+        console.log "no token found #{getTokenPath(args.user)}: requesting new token by sending a link to user to click on."
         authUrl = oauth2Client.generateAuthUrl
           access_type: 'offline'
           scope: [ 'https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', ]
@@ -96,10 +99,13 @@ module.exports = (robot) ->
         messageUser args.user, "Authorize this app by visiting this url: #{authUrl} then give me the code please :simple_smile:"
 
       else
+        console.log "Found a token file for user. Here' i's what's inside: "
         oauth2Client.credentials = JSON.parse(token)
+        console.log oauth2Client.credentials
         callback args
 
   storeToken = (token, token_path) ->
+    console.info "-> storeToken";
     try
       fs.mkdirSync token_dir
     catch err
@@ -112,6 +118,7 @@ module.exports = (robot) ->
   # talk methods
   #
   messageUser = (user, message) ->
+    console.info "-> messageUser ";
     console.log "> @#{user}: #{message}"
     robot.emit 'slack.attachment',
       channel: user
@@ -120,6 +127,7 @@ module.exports = (robot) ->
       }]
 
   confirmReminders = (args) ->
+    console.info "-> confirmReminders";
     user = args.user
     console.log "confirmReminders for #{user}: users list is #{users.toString().replace /,/, ", "}"
 
@@ -134,6 +142,7 @@ module.exports = (robot) ->
       messageUser user, "Reminders are already enabled my dear #{user}. :simple_smile:"
 
   sendReminder = (robot, user, event) ->
+    console.info "-> sendReminder";
     text = ""
     if event.start.dateTime # no dateTime if event is all day long
       start = new Date(event.start.dateTime)
@@ -159,22 +168,26 @@ module.exports = (robot) ->
   # hubot events
   #
   robot.respond /(send me meeting reminders)/i, (msg) ->
-    console.log "#{msg.message.user.name} to reminders wants reminders."
+    console.info "-> robot.reponse /send me meeting reminders/ from #{msg.message.user.name}";
+    console.log "#{msg.message.user.name} wants reminders."
     authorize confirmReminders, { user: msg.message.user.name }
 
   robot.respond /(stop sending me meeting reminders)/i, (msg) ->
+    console.info "-> robot.reponse /stop sending me meeting reminders/ from #{msg.message.user.name}";
     users.splice(users.indexOf(msg.message.user.name), 1)
     robot.brain.set('reminder_users', users)
     msg.send "Alright, #{msg.message.user.name}. I won't send you reminders anymore."
 
-  robot.respond /(Who's getting reminders\?)/i, (msg) ->
+  robot.respond /(who's getting reminders\?)/i, (msg) ->
+    console.info "-> robot.reponse /who's getting reminders\?/ from #{msg.message.user.name}";
     if users.length
       msg.send "I'm currently sending reminders to #{users.toString().replace /,/, ", "}."
     else
-      msg.send "I'm not currently sending reminders to anyone."
+      msg.send "I'm not currently sending reminders to anyone. :disappointed:"
 
   # Wait for a auth code from user : codes start with 4\
   robot.respond /(4\/(.*))/i, (msg) ->
+    console.info "-> robot.reponse /(4\/(.*))/ from #{msg.message.user.name}";
     user = msg.message.user.name
     if user in awaiting_code
       code = "#{msg.match[1]}"
@@ -203,6 +216,7 @@ module.exports = (robot) ->
   # automated check loop functions
   #
   findEventUpcomingEvents = (args) ->
+    console.info "-> findEventUpcomingEvents";
     calendar_args =
       auth: oauth2Client
       calendarId: 'primary'
@@ -239,7 +253,7 @@ module.exports = (robot) ->
 
   automate = ->
     console.log "-----------------------------"
-    console.log "now is : #{(new Date()).toISOString()}. BTW, I'm awaiting auth code from #{awaiting_code.toString().replace /,/, ", "}"
+    console.log "now is : #{(new Date()).toISOString()}. Awaiting auth code from #{awaiting_code.toString().replace /,/, ", "}"
     for user in users
       if user not in awaiting_code
         timeMin = nowPlusMinutes(remind_me)
