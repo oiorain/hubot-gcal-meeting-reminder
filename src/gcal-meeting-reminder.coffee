@@ -148,6 +148,7 @@ module.exports = (robot) ->
         if user not in awaiting_code
           timeMin = nowPlusMinutes(remind_me)
           timeMax = nowPlusMinutes(remind_me+2400)
+          args = {user: user, timeMin: timeMin, timeMax: timeMax, timeMax, timeMax}
           console.log "Looking at events for #{user} between #{timeMin.toISOString()} and #{timeMax.toISOString()}."
           calendar_args =
             auth: oauth
