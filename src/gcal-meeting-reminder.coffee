@@ -139,6 +139,7 @@ module.exports = (robot) ->
   #
   robot.respond /(plop)/i, (msg) ->
     robot.emit 'google:authenticate', msg, (err, oauth) ->
+      oauth2Client = oauth  # check wether this should be stored for each user 
       console.log "Got an answer from google:authenticate : #{JSON.stringify(err, null, 3)} / oauth : #{JSON.stringify(oauth, null, 3)}"
       confirmReminders { user: msg.message.user.name }
 
