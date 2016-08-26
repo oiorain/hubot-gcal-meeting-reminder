@@ -43,9 +43,7 @@ module.exports = (robot) ->
   oauth2Client = false
 
   # retrieving settings from gcal-meeting-reminder.json
-  console.log "loading configuration"
   try
-    console.log "attempting to load the setting file #{settings_file}"
     fs.readFile settings_file, (err, contents) ->
       if err
         throw err
@@ -53,10 +51,9 @@ module.exports = (robot) ->
       settings = JSON.parse(contents)
       auth = new googleAuth
       oauth2Client = new (auth.OAuth2)(settings.web.client_id, settings.web.client_secret, settings.web.redirect_uris[0])
-      console.info "Found a config file. It contains: #{JSON.stringify(oauth2Client)}"
+      console.info "Found a config file (#{settings_file})"
   catch e
     console.warn "Could not find or read #{settings_file} file: #{err}"
-
 
   #
   # Helper functions
