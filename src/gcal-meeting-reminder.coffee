@@ -223,9 +223,8 @@ module.exports = (robot) ->
           # has startTime = event is not all day long
           # not creator.self = someone else created the event
           # if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
-          # if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
-            console.log "#{JSON.stringify(event)}"
-            sendReminder robot, args.user, event
+          console.log "#{JSON.stringify(event)}"
+          sendReminder robot, args.user, event
 
   automate = ->
     console.log "-----------------------------"
