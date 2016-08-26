@@ -80,39 +80,11 @@ module.exports = (robot) ->
   #
   # Auth methods
   #
-  getTokenPath = (user) ->
-    console.info "Config file for user is #{token_dir}#{user}-credentials.json";
-    token_dir + "#{user}-credentials.json"
 
   # Check if we have previously stored a token for user speaking
   authorize = (callback, args) ->
-    console.info "-> authorize";
-    fs.readFile getTokenPath(args.user), (err, token) ->
-      if err
-        console.log "no token found #{getTokenPath(args.user)}: requesting new token by sending a link to user to click on."
-        authUrl = oauth2Client.generateAuthUrl
-          access_type: 'offline'
-          scope: [ 'https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', ]
-
-        awaiting_code.push(args.user) if args.user not in awaiting_code
-        messageUser args.user, "Authorize this app by visiting this url: #{authUrl} then give me the code please :simple_smile:"
-
-      else
-        console.log "Found a token file for user. Here' i's what's inside: "
-        oauth2Client.credentials = JSON.parse(token)
-        console.log oauth2Client.credentials
-        callback args
-
-  storeToken = (token, token_path) ->
-    console.info "-> storeToken";
-    try
-      fs.mkdirSync token_dir
-    catch err
-      if err.code != 'EEXIST'
-        throw err
-    fs.writeFile token_path, JSON.stringify(token)
-    console.log 'Token stored to ' + token_path
-
+    console.log "assuming you're logged in..."
+    callback args
   #
   # talk methods
   #
@@ -166,6 +138,11 @@ module.exports = (robot) ->
   #
   # hubot events
   #
+  robot.respond /(plop)/i, (msg) ->
+    robot.emit 'google:authenticate', msg, (err, oauth) ->
+      googleapis.calendar('v3').events.quickAdd { auth: oauth }, (err, event) ->
+        confirmReminders { user: msg.message.user.name }
+
   robot.respond /(send me meeting reminders)/i, (msg) ->
     console.info "-> robot.reponse /send me meeting reminders/ from #{msg.message.user.name}";
     console.log "#{msg.message.user.name} wants reminders."
