@@ -140,8 +140,7 @@ module.exports = (robot) ->
   #
   robot.respond /(plop)/i, (msg) ->
     robot.emit 'google:authenticate', msg, (err, oauth) ->
-      googleapis.calendar('v3').events.quickAdd { auth: oauth }, (err, event) ->
-        confirmReminders { user: msg.message.user.name }
+      confirmReminders { user: msg.message.user.name }
 
   robot.respond /(send me meeting reminders)/i, (msg) ->
     console.info "-> robot.reponse /send me meeting reminders/ from #{msg.message.user.name}";
