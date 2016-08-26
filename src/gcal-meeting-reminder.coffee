@@ -49,10 +49,10 @@ module.exports = (robot) ->
         throw err
         return
       settings = JSON.parse(contents)
+      console.info "Found a config file (#{settings_file})"
       auth = new googleAuth
       oauth2Client = new (auth.OAuth2)(settings.web.client_id, settings.web.client_secret, settings.web.redirect_uris[0])
       console.log "oauth2Client: #{JSON.stringify(oauth2Client, null, 6)}"
-      console.info "Found a config file (#{settings_file})"
   catch e
     console.warn "Could not find or read #{settings_file} file: #{err}"
 
@@ -79,18 +79,9 @@ module.exports = (robot) ->
     reaction[Math.floor(Math.random() * (reaction.length))]
 
   #
-  # Auth methods
-  #
-
-  # Check if we have previously stored a token for user speaking
-  authorize = (callback, args) ->
-    console.log "assuming you're logged in..."
-    callback args
-  #
   # talk methods
   #
   messageUser = (user, message) ->
-    console.info "-> messageUser ";
     console.log "> @#{user}: #{message}"
     robot.emit 'slack.attachment',
       channel: user
@@ -99,16 +90,14 @@ module.exports = (robot) ->
       }]
 
   confirmReminders = (args) ->
-    console.info "-> confirmReminders";
+    console.info "-> confirmReminders for #{args.user}: users list is #{users.toString().replace /,/, ", "}";
     user = args.user
-    console.log "confirmReminders for #{user}: users list is #{users.toString().replace /,/, ", "}"
 
     if user not in users
       # Add user to perstisted list
       users.push user if user not in users
       robot.brain.set('reminder_users', users)
-
-      messageUser user, "Sure, #{user}. I'll send your meeting reminders from now on.\nYou can stop anytime by telling me \"stop sending me meeting reminders\"."
+      messageUser user, "Alright, #{user}! I'll send your meeting reminders from now on.\nYou can stop anytime by telling me \"stop sending me meeting reminders\"."
 
     else
       messageUser user, "Reminders are already enabled my dear #{user}. :simple_smile:"
@@ -123,7 +112,7 @@ module.exports = (robot) ->
     text += "Invited by #{event.organizer.displayName}"
     text += "\n#{event.description}" if event.description
 
-    console.log "event"+JSON.stringify(event)
+    console.log "event : #{JSON.stringify(event)}"
     robot.emit 'slack.attachment',
       channel: user
       content: [{
@@ -141,12 +130,11 @@ module.exports = (robot) ->
   #
   robot.respond /(plop|send me meeting reminders)/i, (msg) ->
     console.info "-> robot.reponse /send me meeting reminders/ from #{msg.message.user.name}";
-    console.log "#{msg.message.user.name} wants reminders."
 
     robot.emit 'google:authenticate', msg, (err, oauth) ->
-      console.log "oauth for #{msg.message.user.name}: #{JSON.stringify(oauth, null, 6)}"
+      console.log "oauth for #{msg.message.user.name}: #{JSON.stringify(oauth, null, 3)}"
       userAuth[msg.message.user.name] = oauth
-      console.log "Got an answer from google:authenticate : #{JSON.stringify(err, null, 3)} / oauth : #{JSON.stringify(oauth, null, 3)}"
+      console.log "Got an answer from google:authenticate : #{JSON.stringify(err, null, 3)} / oauth : #{JSON.stringify(oauth)}"
       confirmReminders { user: msg.message.user.name }
 
   robot.respond /(stop sending me meeting reminders)/i, (msg) ->
@@ -165,14 +153,12 @@ module.exports = (robot) ->
   # Log and send respond if there's an error
   robot.error (err, res) ->
     robot.logger.error "DOES NOT COMPUTE"
-    if res?
-      res.send "Arg! I'm affraid there was an error in my code T_T"
+    res.send "Arg! I'm affraid there was an error in my code T_T" if res?
 
   #
   # automated check loop functions
   #
   findEventUpcomingEvents = (args) ->
-    console.info "-> findEventUpcomingEvents/ args : #{JSON.stringify(args, null, 3)}";
     calendar_args =
       auth: userAuth[args.user]
       calendarId: 'primary'
@@ -187,8 +173,8 @@ module.exports = (robot) ->
       if err
         console.log "No events found for that time range.The API returned an error: #{JSON.stringify(err, null, 3)}"
         if err.code == 400 # invalid_request
-          console.log "Let's ask for a new token"
-          authorize messageUser, { user: args.user, "please say 'plop' to renew your authentification token." }
+          console.log "Token invalid. Asking the user to renew."
+          messageUser { user: args.user, "Oups... Looks like I lost your token :cry:. Please say 'plop' and i'll renew it for you." }
         return
       events = response.items
       if events.length > 0
@@ -198,26 +184,22 @@ module.exports = (robot) ->
           low_diff = Math.floor((args.timeMin.getTime() - start.getTime())/1000)
           high_diff = Math.floor((args.timeMax.getTime() - start.getTime())/1000)
 
-          console.log "----------------------------------------------"
-          console.log "#{event.start.dateTime} - #{event.summary} // #{low_diff} : #{high_diff}"
+          console.log "#{args.user} --- #{event.start.dateTime} - #{event.summary} // #{low_diff} : #{high_diff}"
 
           # has startTime = event is not all day long
           # not creator.self = someone else created the event
           if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
-            console.log "#{JSON.stringify(event)}"
+            console.log "Notify: #{JSON.stringify(event)}"
             sendReminder robot, args.user, event
 
   automate = ->
-    console.log "-----------------------------"
-    console.log "now is : #{(new Date()).toISOString()}. Awaiting auth code from #{awaiting_code.toString().replace /,/, ", "}"
+    console.log "----------------------------- now is : #{(new Date()).toISOString()}. Waiting for auth code from #{awaiting_code.toString().replace /,/, ", "}"
     for user in users
       if user not in awaiting_code
         timeMin = nowPlusMinutes(remind_me)
         timeMax = nowPlusMinutes(remind_me+1)
-        console.log "Looking at events for #{user} between #{timeMin.toISOString()} and #{timeMax.toISOString()}."
-        authorize findEventUpcomingEvents, {user: user, timeMin: timeMin, timeMax: timeMax}
+        findEventUpcomingEvents {user: user, timeMin: timeMin, timeMax: timeMax}
     return
-
 
   setTimeout automate, 1000
   setInterval automate, 60000 # every minute :
