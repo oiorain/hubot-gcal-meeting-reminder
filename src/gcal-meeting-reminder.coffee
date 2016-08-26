@@ -30,7 +30,6 @@ module.exports = (robot) ->
   googleAuth = require 'google-auth-library'
 
   # location where auth tokens and settings files are stored
-  token_dir = (process.env.HOME or process.env.HOMEPATH or process.env.USERPROFILE) + '/.gcal-meeting-reminder/'
   settings_file = process.cwd()+"/gcal-meeting-reminder.json"
   settings = {}
 
@@ -139,7 +138,9 @@ module.exports = (robot) ->
   # hubot events
   #
   robot.respond /(plop)/i, (msg) ->
+    console.log "#{JSON.parse(msg)}"
     robot.emit 'google:authenticate', msg, (err, oauth) ->
+      console.log "Got an answer from google:authenticate : #{JSON.parse(err)} / oauth : #{JSON.parse(oauth)}"
       confirmReminders { user: msg.message.user.name }
 
   robot.respond /(send me meeting reminders)/i, (msg) ->
@@ -159,27 +160,6 @@ module.exports = (robot) ->
       msg.send "I'm currently sending reminders to #{users.toString().replace /,/, ", "}."
     else
       msg.send "I'm not currently sending reminders to anyone. :disappointed:"
-
-  # Wait for a auth code from user : codes start with 4\
-  robot.respond /(4\/(.*))/i, (msg) ->
-    console.info "-> robot.reponse /(4\/(.*))/ from #{msg.message.user.name}";
-    user = msg.message.user.name
-    if user in awaiting_code
-      code = "#{msg.match[1]}"
-      console.log "the code would be : #{code}"
-
-      oauth2Client.getToken code, (err, token) ->
-        if err
-          console.log 'Error while trying to retrieve access token', err
-          msg.send "Sorry I couldn't retrieve the token to give you access :cry:."
-          return
-        oauth2Client.credentials = token
-        storeToken token, getTokenPath user
-
-        msg.send "Thanks!"
-        awaiting_code.splice(awaiting_code.indexOf(msg.message.user.name), 1)
-    else
-      msg.send "Sorry, I didn't get that.."
 
   # Log and send respond if there's an error
   robot.error (err, res) ->
@@ -204,7 +184,8 @@ module.exports = (robot) ->
 
     google.calendar('v3').events.list calendar_args, (err, response) ->
       if err
-        console.log "No events found for that time range.The API returned an error: #{JSON.stringify(err)}"
+        console.log "No events found for that time range.The API returned an error: #{JSON.parse(err)}"
+        messageUser user, "Oups.. something went wrong."
         if err.code == 400 # invalid_request
           console.log "Let's ask for a new token"
           authorize confirmReminders, { user: user }
