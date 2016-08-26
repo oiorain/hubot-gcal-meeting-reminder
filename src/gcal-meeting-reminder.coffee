@@ -182,7 +182,7 @@ module.exports = (robot) ->
   findEventUpcomingEvents = (args) ->
     console.info "-> findEventUpcomingEvents/ args : #{JSON.stringify(args, null, 3)}";
     calendar_args =
-      auth: userAuth[user]
+      auth: userAuth[args.user]
       calendarId: 'primary'
       timeMin: args.timeMin.toISOString()
       timeMax: args.timeMax.toISOString()
@@ -196,7 +196,7 @@ module.exports = (robot) ->
         console.log "No events found for that time range.The API returned an error: #{JSON.stringify(err, null, 3)}"
         if err.code == 400 # invalid_request
           console.log "Let's ask for a new token"
-          authorize messageUser, { user: user, "please say 'plop' to renew your authentification token." }
+          authorize messageUser, { user: args.user, "please say 'plop' to renew your authentification token." }
         return
       events = response.items
       if events.length > 0
