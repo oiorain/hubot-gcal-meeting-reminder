@@ -138,7 +138,6 @@ module.exports = (robot) ->
   # hubot events
   #
   robot.respond /(plop)/i, (msg) ->
-    console.log "#{JSON.parse(msg)}"
     robot.emit 'google:authenticate', msg, (err, oauth) ->
       console.log "Got an answer from google:authenticate : #{JSON.parse(err)} / oauth : #{JSON.parse(oauth)}"
       confirmReminders { user: msg.message.user.name }
