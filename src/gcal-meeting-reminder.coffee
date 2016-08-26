@@ -142,6 +142,25 @@ module.exports = (robot) ->
       console.log "Got an answer from google:authenticate : #{JSON.stringify(err, null, 3)} / oauth : #{JSON.stringify(oauth, null, 3)}"
       confirmReminders { user: msg.message.user.name }
 
+      # automate
+      for user in users
+        if user not in awaiting_code
+          timeMin = nowPlusMinutes(remind_me)
+          timeMax = nowPlusMinutes(remind_me+1)
+          console.log "Looking at events for #{user} between #{timeMin.toISOString()} and #{timeMax.toISOString()}."
+          findEventUpcomingEvents {user: user, timeMin: timeMin, timeMax, timeMax}
+      return
+
+  robot.respond /(tell me)/i, (msg) ->
+    # automate
+    for user in users
+      if user not in awaiting_code
+        timeMin = nowPlusMinutes(remind_me)
+        timeMax = nowPlusMinutes(remind_me+1)
+        console.log "Looking at events for #{user} between #{timeMin.toISOString()} and #{timeMax.toISOString()}."
+        findEventUpcomingEvents {user: user, timeMin: timeMin, timeMax, timeMax}
+    return
+
   robot.respond /(send me meeting reminders)/i, (msg) ->
     console.info "-> robot.reponse /send me meeting reminders/ from #{msg.message.user.name}";
     console.log "#{msg.message.user.name} wants reminders."
@@ -202,7 +221,8 @@ module.exports = (robot) ->
 
           # has startTime = event is not all day long
           # not creator.self = someone else created the event
-          if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
+          # if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
+          if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 6000 and event.status == "confirmed"
             console.log "#{JSON.stringify(event)}"
             sendReminder robot, args.user, event
 
