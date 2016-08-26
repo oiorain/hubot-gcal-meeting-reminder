@@ -223,7 +223,7 @@ module.exports = (robot) ->
           # has startTime = event is not all day long
           # not creator.self = someone else created the event
           # if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
-          if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 6000 and event.status == "confirmed"
+          if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
             console.log "#{JSON.stringify(event)}"
             sendReminder robot, args.user, event
 
@@ -233,7 +233,8 @@ module.exports = (robot) ->
     for user in users
       if user not in awaiting_code
         timeMin = nowPlusMinutes(remind_me)
-        timeMax = nowPlusMinutes(remind_me+1)
+        # timeMax = nowPlusMinutes(remind_me+1)
+        timeMax = nowPlusMinutes(remind_me+60) # for tests
         console.log "Looking at events for #{user} between #{timeMin.toISOString()} and #{timeMax.toISOString()}."
         authorize findEventUpcomingEvents, {user: user, timeMin: timeMin, timeMax, timeMax}
     return
