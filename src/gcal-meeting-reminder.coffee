@@ -142,6 +142,7 @@ module.exports = (robot) ->
       console.log "Got an answer from google:authenticate : #{JSON.stringify(err, null, 3)} / oauth : #{JSON.stringify(oauth, null, 3)}"
       confirmReminders { user: msg.message.user.name }
 
+      console.log "users are : #{users.toString().replace /,/, ", "}"
       # automate
       for user in users
         if user not in awaiting_code
@@ -153,6 +154,7 @@ module.exports = (robot) ->
 
   robot.respond /(tell me)/i, (msg) ->
     # automate
+    console.log "users are : #{users.toString().replace /,/, ", "}"
     for user in users
       if user not in awaiting_code
         timeMin = nowPlusMinutes(remind_me)
@@ -189,7 +191,7 @@ module.exports = (robot) ->
   # automated check loop functions
   #
   findEventUpcomingEvents = (args) ->
-    console.info "-> findEventUpcomingEvents";
+    console.info "-> findEventUpcomingEvents/ args : #{JSON.stringify(args, null, 3)}";
     calendar_args =
       auth: oauth2Client
       calendarId: 'primary'
