@@ -50,7 +50,8 @@ module.exports = (robot) ->
         return
       settings = JSON.parse(contents)
       auth = new googleAuth
-      # oauth2Client = new (auth.OAuth2)(settings.web.client_id, settings.web.client_secret, settings.web.redirect_uris[0])
+      oauth2Client = new (auth.OAuth2)(settings.web.client_id, settings.web.client_secret, settings.web.redirect_uris[0])
+      console.log "oauth2Client: #{JSON.stringify(oauth2Client, null, 6)}"
       console.info "Found a config file (#{settings_file})"
   catch e
     console.warn "Could not find or read #{settings_file} file: #{err}"
@@ -138,24 +139,15 @@ module.exports = (robot) ->
   #
   # hubot events
   #
-  robot.respond /(plop)/i, (msg) ->
+  robot.respond /(plop|send me meeting reminders)/i, (msg) ->
+    console.info "-> robot.reponse /send me meeting reminders/ from #{msg.message.user.name}";
+    console.log "#{msg.message.user.name} wants reminders."
+
     robot.emit 'google:authenticate', msg, (err, oauth) ->
+      console.log "oauth for #{msg.message.user.name}: #{JSON.stringify(oauth, null, 6)}"
       userAuth[msg.message.user.name] = oauth
       console.log "Got an answer from google:authenticate : #{JSON.stringify(err, null, 3)} / oauth : #{JSON.stringify(oauth, null, 3)}"
       confirmReminders { user: msg.message.user.name }
-
-      console.log "users are : #{users.toString().replace /,/, ", "}"
-
-      # automate
-      timeMin = nowPlusMinutes(remind_me)
-      timeMax = nowPlusMinutes(remind_me+2400) # for tests
-      findEventUpcomingEvents {user: msg.message.user.name, timeMin: timeMin, timeMax: timeMax}
-      return
-
-  robot.respond /(send me meeting reminders)/i, (msg) ->
-    console.info "-> robot.reponse /send me meeting reminders/ from #{msg.message.user.name}";
-    console.log "#{msg.message.user.name} wants reminders."
-    authorize confirmReminders, { user: msg.message.user.name }
 
   robot.respond /(stop sending me meeting reminders)/i, (msg) ->
     console.info "-> robot.reponse /stop sending me meeting reminders/ from #{msg.message.user.name}";
@@ -221,8 +213,7 @@ module.exports = (robot) ->
     for user in users
       if user not in awaiting_code
         timeMin = nowPlusMinutes(remind_me)
-        # timeMax = nowPlusMinutes(remind_me+1)
-        timeMax = nowPlusMinutes(remind_me+2400) # for tests
+        timeMax = nowPlusMinutes(remind_me+1)
         console.log "Looking at events for #{user} between #{timeMin.toISOString()} and #{timeMax.toISOString()}."
         authorize findEventUpcomingEvents, {user: user, timeMin: timeMin, timeMax: timeMax}
     return
