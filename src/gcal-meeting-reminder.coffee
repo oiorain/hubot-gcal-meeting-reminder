@@ -205,10 +205,9 @@ module.exports = (robot) ->
     google.calendar('v3').events.list calendar_args, (err, response) ->
       if err
         console.log "No events found for that time range.The API returned an error: #{JSON.stringify(err, null, 3)}"
-        messageUser user, "Oups.. something went wrong."
         if err.code == 400 # invalid_request
           console.log "Let's ask for a new token"
-          authorize confirmReminders, { user: user }
+          authorize messageUser, { user: user, "please say 'plop' to renew your authentification token." }
         return
       events = response.items
       if events.length > 0
