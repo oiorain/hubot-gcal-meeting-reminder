@@ -147,9 +147,41 @@ module.exports = (robot) ->
       for user in users
         if user not in awaiting_code
           timeMin = nowPlusMinutes(remind_me)
-          timeMax = nowPlusMinutes(remind_me+1)
+          timeMax = nowPlusMinutes(remind_me+2400)
           console.log "Looking at events for #{user} between #{timeMin.toISOString()} and #{timeMax.toISOString()}."
-          findEventUpcomingEvents {user: user, timeMin: timeMin, timeMax, timeMax}
+          calendar_args =
+            auth: oauth
+            calendarId: 'primary'
+            timeMin: args.timeMin.toISOString()
+            timeMax: args.timeMax.toISOString()
+            maxResults: 10
+            singleEvents: true
+            orderBy: 'startTime'
+            timeZone: "utc"
+
+          google.calendar('v3').events.list calendar_args, (err, response) ->
+            if err
+              console.log "No events found for that time range.The API returned an error: #{JSON.stringify(err, null, 3)}"
+              if err.code == 400 # invalid_request
+                console.log "Let's ask for a new token"
+                authorize messageUser, { user: user, "please say 'plop' to renew your authentification token." }
+              return
+            events = response.items
+            if events.length > 0
+              for event in events
+                # Event starts within 0 to 60 seconds of now + remind_me mins
+                start = new Date(event.start.dateTime)
+                low_diff = Math.floor((args.timeMin.getTime() - start.getTime())/1000)
+                high_diff = Math.floor((args.timeMax.getTime() - start.getTime())/1000)
+
+                console.log "----------------------------------------------"
+                console.log "#{event.start.dateTime} - #{event.summary} // #{low_diff} : #{high_diff}"
+
+                # has startTime = event is not all day long
+                # not creator.self = someone else created the event
+                # if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
+                console.log "#{JSON.stringify(event)}"
+                sendReminder robot, args.user, event
       return
 
   robot.respond /(tell me)/i, (msg) ->
@@ -233,7 +265,7 @@ module.exports = (robot) ->
       if user not in awaiting_code
         timeMin = nowPlusMinutes(remind_me)
         # timeMax = nowPlusMinutes(remind_me+1)
-        timeMax = nowPlusMinutes(remind_me+60) # for tests
+        timeMax = nowPlusMinutes(remind_me+2400) # for tests
         console.log "Looking at events for #{user} between #{timeMin.toISOString()} and #{timeMax.toISOString()}."
         authorize findEventUpcomingEvents, {user: user, timeMin: timeMin, timeMax, timeMax}
     return
