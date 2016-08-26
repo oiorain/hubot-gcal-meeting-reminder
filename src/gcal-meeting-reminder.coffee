@@ -139,7 +139,7 @@ module.exports = (robot) ->
   #
   robot.respond /(plop)/i, (msg) ->
     robot.emit 'google:authenticate', msg, (err, oauth) ->
-      console.log "Got an answer from google:authenticate : #{JSON.parse(err)} / oauth : #{JSON.parse(oauth)}"
+      console.log "Got an answer from google:authenticate : #{JSON.stringify(err, null, 3)} / oauth : #{JSON.stringify(oauth, null, 3)}"
       confirmReminders { user: msg.message.user.name }
 
   robot.respond /(send me meeting reminders)/i, (msg) ->
@@ -183,7 +183,7 @@ module.exports = (robot) ->
 
     google.calendar('v3').events.list calendar_args, (err, response) ->
       if err
-        console.log "No events found for that time range.The API returned an error: #{JSON.parse(err)}"
+        console.log "No events found for that time range.The API returned an error: #{JSON.stringify(err, null, 3)}"
         messageUser user, "Oups.. something went wrong."
         if err.code == 400 # invalid_request
           console.log "Let's ask for a new token"
