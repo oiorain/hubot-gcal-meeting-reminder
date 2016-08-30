@@ -106,8 +106,8 @@ module.exports = (robot) ->
     attendees = ""
     ressources = ""
     for attendee in event.attendees
-      attendees += "#{attendee.displayName}, " unless attendee.self or attendee.responseStatus == "declined"
-      ressources += "#{attendee.displayName}, " unless attendee.ressource
+      attendees += "#{attendee.displayName}, " if !attendee.self and attendee.responseStatus != "declined"
+      ressources += "#{attendee.displayName}, " if attendee.ressource
     text = ""
     if event.start.dateTime # no dateTime if event is all day long
       start = new Date(event.start.dateTime)
