@@ -160,12 +160,10 @@ module.exports = (robot) ->
       msg.send "I'm not currently sending reminders to anyone. :disappointed:"
 
   robot.respond /(send reminders to (.*))/i, (msg) ->
-    userlist = res.match[1]
+    userlist = msg.match[1]
     for user in userlist.split(",")
       users.push user if user not in users
-
     robot.brain.set('reminder_users', users)
-    console.info "-> robot.reponse /who's getting reminders\?/ from #{msg.message.user.name}";
 
   # Log and send respond if there's an error
   robot.error (err, res) ->
