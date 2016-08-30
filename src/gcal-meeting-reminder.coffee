@@ -102,6 +102,7 @@ module.exports = (robot) ->
       awaiting_code.splice(users.indexOf(user), 1)
       users.push user if user not in users
       robot.brain.set('reminder_users', users)
+      console.log " Has my user list been saved properly ? #{robot.brain.get('reminder_users').toString()}"
       messageUser user, "Alright, #{user}! I'll send your meeting reminders from now on.\nYou can stop anytime by telling me \"stop sending me meeting reminders\"."
 
     else
@@ -186,7 +187,6 @@ module.exports = (robot) ->
       timeZone: "utc"
 
     google.calendar('v3').events.list calendar_args, (err, response) ->
-      console.log "#{response}"
       if err
         console.log "No events found for that time range.The API returned an error: #{JSON.stringify(err, null, 3)}"
         awaiting_code.push user if user not in awaiting_code
