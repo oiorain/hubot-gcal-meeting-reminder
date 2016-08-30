@@ -7,7 +7,7 @@
 # Commands:
 #   Gcal Meeting Reminder - send me meeting reminders
 #   Gcal Meeting Reminder - stop sending me meeting reminders
-#   Gcal Meeting Reminder - Who's getting reminders?
+#   Gcal Meeting Reminder - who's getting reminders?
 #
 # Notes:
 #   <optional notes required for the script>
@@ -158,6 +158,14 @@ module.exports = (robot) ->
       msg.send "I'm currently sending reminders to #{users.toString().replace /,/, ", "}."
     else
       msg.send "I'm not currently sending reminders to anyone. :disappointed:"
+
+  robot.respond /(send reminders to (.*))/i, (msg) ->
+    userlist = res.match[1]
+    for user in userlist.split(",")
+      users.push user if user not in users
+
+    robot.brain.set('reminder_users', users)
+    console.info "-> robot.reponse /who's getting reminders\?/ from #{msg.message.user.name}";
 
   # Log and send respond if there's an error
   robot.error (err, res) ->
