@@ -104,16 +104,14 @@ module.exports = (robot) ->
 
   sendReminder = (robot, user, event) ->
     attendees = ""
-    ressources = ""
     for attendee in event.attendees
-      attendees += "#{attendee.displayName}, " if !attendee.self and attendee.responseStatus != "declined"
-      ressources += "#{attendee.displayName}, " if attendee.ressource
+      attendees += "#{attendee.displayName}, " if !attendee.self and attendee.responseStatus != "declined" and !attendee.resource
     text = ""
     if event.start.dateTime # no dateTime if event is all day long
       start = new Date(event.start.dateTime)
       end = new Date(event.end.dateTime)
       text = "#{start.getHours()}:#{("00" + start.getMinutes()).slice (-2)}-#{end.getHours()}:#{("00" + end.getMinutes()).slice (-2)}"
-      text += "At #{ressources.slice(0, -2)}" if ressources
+      text += " At #{event.location}" if event.location
       text += "\n"
     text += "Invited by #{event.organizer.displayName}"
     text += "\n#{event.description}" if event.description
