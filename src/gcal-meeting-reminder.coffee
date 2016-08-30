@@ -28,23 +28,21 @@ module.exports = (robot) ->
   readline = require 'readline'
   google = require 'googleapis'
   googleAuth = require 'google-auth-library'
-
   # location where auth tokens and settings files are stored
-  settings_file = process.cwd()+"/gcal-meeting-reminder.json"
   settings = {}
-
   # the number of minutes before an event the reminder happens
   remind_me = 3
-  # users who have reminders enabled
-  users = robot.brain.get('reminder_users') or []
-  console.log "In my brain, I remember these users: #{users.toString().replace /,/, ", "}"
+  oauth2Client = false
+  # Stock users token in here
+  userAuth = []
+  # list of users asking for reminders
+  users = []
   #List of users we are waiting the authentification code from
   awaiting_code = []
-  oauth2Client = false
-  userAuth = []
 
   # retrieving settings from gcal-meeting-reminder.json
   try
+    settings_file = process.cwd()+"/gcal-meeting-reminder.json"
     fs.readFile settings_file, (err, contents) ->
       if err
         throw err
@@ -56,6 +54,13 @@ module.exports = (robot) ->
       console.log "oauth2Client: #{JSON.stringify(oauth2Client, null, 6)}"
   catch e
     console.warn "Could not find or read #{settings_file} file: #{err}"
+
+  try
+    if robot.brain.get('reminder_users')
+      users = robot.brain.get('reminder_users')
+    console.log "In my brain, I remember these users: #{users.toString().replace /,/, ", "}"
+  catch e
+    console.log "couldnt retrieve user list from `robot.brain.get('reminder_users')` : #{users.toString()}"
 
   #
   # Helper functions
@@ -163,8 +168,9 @@ module.exports = (robot) ->
   # automated check loop functions
   #
   findEventUpcomingEvents = (args) ->
+    user = args.user
     calendar_args =
-      auth: userAuth[args.user]
+      auth: userAuth[user]
       calendarId: 'primary'
       timeMin: args.timeMin.toISOString()
       timeMax: args.timeMax.toISOString()
@@ -174,42 +180,50 @@ module.exports = (robot) ->
       timeZone: "utc"
 
     google.calendar('v3').events.list calendar_args, (err, response) ->
+      console.log "#{response}"
       if err
         console.log "No events found for that time range.The API returned an error: #{JSON.stringify(err, null, 3)}"
-        awaiting_code.push args.user if args.user not in awaiting_code
-        users.splice(users.indexOf(args.user), 1)
+        awaiting_code.push user if user not in awaiting_code
+        users.splice(users.indexOf(user), 1)
+
         if err.code == 401 # invalid credentials
           console.log "Token invalid. Asking the user to renew."
-          robot.emit 'google:authenticate', msg, (err, oauth) ->
-            console.log "google:authenticate: #{JSON.stringify(err, null, 3)}" if err
-            userAuth[user] = oauth
-            awaiting_code.splice(users.indexOf(user), 1)
-            users.push user if user not in users
-            robot.brain.set('reminder_users', users)
-          # messageUser { user: args.user, "Oups... Looks like I lost your token :cry:. Please say 'plop' and i'll renew it for you." }
-      events = response.items
-      if events.length > 0
-        for event in events
-          # Event starts within 0 to 60 seconds of now + remind_me mins
-          start = new Date(event.start.dateTime)
-          low_diff = Math.floor((args.timeMin.getTime() - start.getTime())/1000)
-          high_diff = Math.floor((args.timeMax.getTime() - start.getTime())/1000)
+          robot.emit 'google:authenticate', {channel: user}, (err, oauth) ->
+            if err
+              console.log "google:authenticate: #{JSON.stringify(err, null, 3)}"
+              messageUser { user: user, "Oups... Looks like I lost your token :cry:. Please say 'plop' and i'll renew it for you." }
+            else
+              userAuth[user] = oauth
+              awaiting_code.splice(users.indexOf(user), 1)
+              users.push user if user not in users
+              robot.brain.set('reminder_users', users)
 
-          # has startTime = event is not all day long
-          # not creator.self = someone else created the event
-          if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
-            console.log "Notify: #{JSON.stringify(event)}"
-            sendReminder robot, args.user, event
+      else
+        events = response.items
+        if events.length > 0
+          for event in events
+            # Event starts within 0 to 60 seconds of now + remind_me mins
+            start = new Date(event.start.dateTime)
+            low_diff = Math.floor((args.timeMin.getTime() - start.getTime())/1000)
+            high_diff = Math.floor((args.timeMax.getTime() - start.getTime())/1000)
+
+            # has startTime = event is not all day long
+            # not creator.self = someone else created the event
+            if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
+              console.log "Notify: #{JSON.stringify(event)}"
+              sendReminder robot, user, event
 
   automate = ->
     console.log "---- now is : #{(new Date()).toISOString()}. Waiting for auth code from #{awaiting_code.toString().replace /,/, ", "}"
-    for user in users
-      if user not in awaiting_code
-        console.log "-- #{user}"
-        timeMin = nowPlusMinutes(remind_me)
-        timeMax = nowPlusMinutes(remind_me+1)
-        findEventUpcomingEvents {user: user, timeMin: timeMin, timeMax: timeMax}
-    return
+    console.log "#{users.toString().replace /,/, ", "}"
+    if users.length > 0
+      for user in users
+        if user not in awaiting_code
+          console.log "-- #{user}"
+          timeMin = nowPlusMinutes(remind_me)
+          timeMax = nowPlusMinutes(remind_me+1)
+          findEventUpcomingEvents {user: user, timeMin: timeMin, timeMax: timeMax}
 
-  setTimeout automate, 1000
+
+  setTimeout automate, 3000
   setInterval automate, 60000 # every minute :
