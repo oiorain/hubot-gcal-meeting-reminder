@@ -103,13 +103,21 @@ module.exports = (robot) ->
       messageUser user, "Reminders are already enabled my dear #{user}. :simple_smile:"
 
   sendReminder = (robot, user, event) ->
+    attendees = ""
+    ressources = ""
+    for attendee in event.attendees
+      attendees += "#{attendee.displayName}, " unless attendee.self or attendee.responseStatus == "declined"
+      ressources += "#{attendee.displayName}, " unless attendee.ressource
     text = ""
     if event.start.dateTime # no dateTime if event is all day long
       start = new Date(event.start.dateTime)
       end = new Date(event.end.dateTime)
-      text = "#{start.getHours()}:#{("00" + start.getMinutes()).slice (-2)}-#{end.getHours()}:#{("00" + end.getMinutes()).slice (-2)}\n"
+      text = "#{start.getHours()}:#{("00" + start.getMinutes()).slice (-2)}-#{end.getHours()}:#{("00" + end.getMinutes()).slice (-2)}"
+      text += "At #{ressources.slice(0, -2)}" if ressources
+      text += "\n"
     text += "Invited by #{event.organizer.displayName}"
     text += "\n#{event.description}" if event.description
+    text += "\n with #{attendees.slice(0, -2)}" if attendees
 
     console.log "event : #{JSON.stringify(event)}"
     robot.emit 'slack.attachment',
