@@ -37,6 +37,7 @@ module.exports = (robot) ->
   remind_me = 3
   # users who have reminders enabled
   users = robot.brain.get('reminder_users') or []
+  console.log "In my brain, I remember these users: #{users.toString().replace /,/, ", "}"
   #List of users we are waiting the authentification code from
   awaiting_code = []
   oauth2Client = false
@@ -175,6 +176,7 @@ module.exports = (robot) ->
           console.log "Token invalid. Asking the user to renew."
           robot.emit 'google:authenticate', msg, (err, oauth) ->
             console.log "google:authenticate: #{JSON.stringify(err, null, 3)}" if err
+            userAuth[user] = oauth
             awaiting_code.splice(users.indexOf(user), 1)
             users.push user if user not in users
             robot.brain.set('reminder_users', users)
