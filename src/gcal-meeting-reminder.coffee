@@ -90,11 +90,10 @@ module.exports = (robot) ->
       }]
 
   confirmReminders = (args) ->
-    console.info "-> confirmReminders for #{args.user}: users list is #{users.toString().replace /,/, ", "}";
     user = args.user
-
     if user not in users
       # Add user to perstisted list
+      awaiting_code.splice(users.indexOf(user), 1)
       users.push user if user not in users
       robot.brain.set('reminder_users', users)
       messageUser user, "Alright, #{user}! I'll send your meeting reminders from now on.\nYou can stop anytime by telling me \"stop sending me meeting reminders\"."
@@ -103,7 +102,6 @@ module.exports = (robot) ->
       messageUser user, "Reminders are already enabled my dear #{user}. :simple_smile:"
 
   sendReminder = (robot, user, event) ->
-    console.info "-> sendReminder";
     text = ""
     if event.start.dateTime # no dateTime if event is all day long
       start = new Date(event.start.dateTime)
@@ -129,8 +127,7 @@ module.exports = (robot) ->
   # hubot events
   #
   robot.respond /(plop|send me meeting reminders)/i, (msg) ->
-    console.info "-> robot.reponse /send me meeting reminders/ from #{msg.message.user.name}";
-
+    awaiting_code.push msg.message.user.name if msg.message.user.name not in awaiting_code
     robot.emit 'google:authenticate', msg, (err, oauth) ->
       console.log "oauth for #{msg.message.user.name}: #{JSON.stringify(oauth, null, 3)}"
       userAuth[msg.message.user.name] = oauth
@@ -172,10 +169,16 @@ module.exports = (robot) ->
     google.calendar('v3').events.list calendar_args, (err, response) ->
       if err
         console.log "No events found for that time range.The API returned an error: #{JSON.stringify(err, null, 3)}"
-        if err.code == 400 # invalid_request
+        awaiting_code.push args.user if args.user not in awaiting_code
+        users.splice(users.indexOf(args.user), 1)
+        if err.code == 401 # invalid credentials
           console.log "Token invalid. Asking the user to renew."
-          messageUser { user: args.user, "Oups... Looks like I lost your token :cry:. Please say 'plop' and i'll renew it for you." }
-        return
+          robot.emit 'google:authenticate', msg, (err, oauth) ->
+            console.log "google:authenticate: #{JSON.stringify(err, null, 3)}" if err
+            awaiting_code.splice(users.indexOf(user), 1)
+            users.push user if user not in users
+            robot.brain.set('reminder_users', users)
+          # messageUser { user: args.user, "Oups... Looks like I lost your token :cry:. Please say 'plop' and i'll renew it for you." }
       events = response.items
       if events.length > 0
         for event in events
@@ -184,8 +187,6 @@ module.exports = (robot) ->
           low_diff = Math.floor((args.timeMin.getTime() - start.getTime())/1000)
           high_diff = Math.floor((args.timeMax.getTime() - start.getTime())/1000)
 
-          console.log "#{args.user} --- #{event.start.dateTime} - #{event.summary} // #{low_diff} : #{high_diff}"
-
           # has startTime = event is not all day long
           # not creator.self = someone else created the event
           if event.start.dateTime and event.attendees and low_diff == 0 and high_diff == 60 and event.status == "confirmed"
@@ -193,9 +194,10 @@ module.exports = (robot) ->
             sendReminder robot, args.user, event
 
   automate = ->
-    console.log "----------------------------- now is : #{(new Date()).toISOString()}. Waiting for auth code from #{awaiting_code.toString().replace /,/, ", "}"
+    console.log "---- now is : #{(new Date()).toISOString()}. Waiting for auth code from #{awaiting_code.toString().replace /,/, ", "}"
     for user in users
       if user not in awaiting_code
+        console.log "-- #{user}"
         timeMin = nowPlusMinutes(remind_me)
         timeMax = nowPlusMinutes(remind_me+1)
         findEventUpcomingEvents {user: user, timeMin: timeMin, timeMax: timeMax}
