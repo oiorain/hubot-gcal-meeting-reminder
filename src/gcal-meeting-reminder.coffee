@@ -138,6 +138,7 @@ module.exports = (robot) ->
     user = args.user
     if user not in users
       AddUserToReminderList user
+      moveUserBackToUserList user
       console.log " Has my user list been saved properly ? #{users.toString()}"
       messageUser user, "Alright, #{user}! I'll send your meeting reminders from now on.\nYou can stop anytime by telling me \"stop sending me meeting reminders\"."
     else
@@ -224,13 +225,13 @@ module.exports = (robot) ->
           name: user
 
     robot.emit 'google:authenticate', msg, (err, oauth) ->
+      return console.log "google:authenticate #{JSON.stringify(err)}" if err
       calendar_args.auth = oauth
       calendar_args.timeMin = args.timeMin.toISOString()
       calendar_args.timeMax = args.timeMax.toISOString()
 
       google.calendar('v3').events.list calendar_args, (err, response) ->
-        if err
-          console.log "Query to API returned #{JSON.stringify(err)}"
+        if err?
           if err.code == 500
             messageUser user, "Looks like there's a problem with Google Calendar right now :shy:. I wasnt able to read your events."
 
@@ -238,9 +239,10 @@ module.exports = (robot) ->
             AddUserToAuthRequired user
             removeUserFromReminderList user
             messageUser user, "Oups... Looks like I lost your token and I didn't succeed in getting a replacement :cry:. Please say 'plop' and i'll renew it for you."
+          return console.log "Query to API returned #{JSON.stringify(err)}"
 
-        else
-          CheckWetherEventsNeedReminderNow response.items, user if response.items > 0
+        console.log "found #{response.items} events"
+        CheckWetherEventsNeedReminderNow response.items, user if response.items > 0
 
   automate = ->
     console.log "---- #{(new Date()).toISOString()}. users: #{users.toString().replace /,/, ", "}. authRequired: #{authRequired.toString().replace /,/, ", "}"
