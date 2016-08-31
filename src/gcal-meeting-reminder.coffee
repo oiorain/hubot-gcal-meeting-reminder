@@ -33,6 +33,7 @@ module.exports = (robot) ->
   remind_me = 3
   # list of users asking for reminders
   usersFile = process.cwd()+"/gcal-meeting-reminder.json"
+  fd = fs.openSync(usersFile, 'w+');
   users = []
 
   # arguments for Google Calendar query
@@ -62,7 +63,8 @@ module.exports = (robot) ->
 
   setUserListToFile = ->
     try
-      fs.writeFile usersFile, JSON.stringify(users), { flag: 'wx' }, (err) ->
+      console.log "about to write this to file : #{JSON.stringify(users)}"
+      fs.write fd, JSON.stringify(users), (err) ->
         throw err if err
     catch err
       console.log "couldnt write user list from the token file #{usersFile} file: #{err}"
