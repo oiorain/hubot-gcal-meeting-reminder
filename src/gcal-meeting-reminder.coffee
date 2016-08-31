@@ -210,5 +210,5 @@ module.exports = (robot) ->
         findEventUpcomingEvents user
 
   setTimeout getUsersFromBrain, 3000
-  setTimeout automate, 5000
+  setTimeout automate, 10000
   setInterval automate, 60000 # every minute :
