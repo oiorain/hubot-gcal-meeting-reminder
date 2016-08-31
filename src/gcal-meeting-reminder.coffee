@@ -83,7 +83,6 @@ module.exports = (robot) ->
   #
   confirmReminders = (user) ->
     if user not in users
-      console.log " Has my user list been saved properly ? #{users.toString()}"
       messageUser user, "Alright, #{user}! I'll send your meeting reminders from now on.\nYou can stop anytime by telling me \"stop sending me meeting reminders\"."
     else
       messageUser user, "Reminders are already enabled my dear #{user}. :simple_smile:"
