@@ -38,6 +38,7 @@ module.exports = (robot) ->
 
   # the number of minutes before an event the reminder happens
   remind_me = 3
+  users = []
 
   #
   # Setting functions
@@ -46,8 +47,8 @@ module.exports = (robot) ->
   getUsersFromBrain = ->
     # list of users asking for reminders
     console.log "Found users in my brain! #{robot.brain.get 'usersGettingReminders'}"
-    users = robot.brain.get 'usersGettingReminders'
-    users = [] unless users
+    users = robot.brain.get 'usersGettingReminders' if robot.brain.get 'usersGettingReminders' != null
+
 
   # Add/remove user to reminder list
   AddUserToReminderList = (user) ->
