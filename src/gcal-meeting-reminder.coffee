@@ -62,7 +62,7 @@ module.exports = (robot) ->
 
   setUserListToFile = ->
     try
-      fs.writeFile usersFile, users, { flag: 'wx' }, (err) ->
+      fs.writeFile usersFile, JSON.stringify(users), { flag: 'wx' }, (err) ->
         throw err if err
     catch err
       console.log "couldnt write user list from the token file #{usersFile} file: #{err}"
