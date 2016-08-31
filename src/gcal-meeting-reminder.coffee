@@ -225,13 +225,15 @@ module.exports = (robot) ->
           name: user
 
     robot.emit 'google:authenticate', msg, (err, oauth) ->
-      return console.log "google:authenticate #{JSON.stringify(err)}" if err
+      console.log "google:authenticate #{JSON.stringify(err)}" if err?
       calendar_args.auth = oauth
       calendar_args.timeMin = args.timeMin.toISOString()
       calendar_args.timeMax = args.timeMax.toISOString()
 
       google.calendar('v3').events.list calendar_args, (err, response) ->
+        console.log "found #{response.items} events"
         if err?
+          console.log "Query to API returned #{JSON.stringify(err)}"
           if err.code == 500
             messageUser user, "Looks like there's a problem with Google Calendar right now :shy:. I wasnt able to read your events."
 
@@ -239,9 +241,8 @@ module.exports = (robot) ->
             AddUserToAuthRequired user
             removeUserFromReminderList user
             messageUser user, "Oups... Looks like I lost your token and I didn't succeed in getting a replacement :cry:. Please say 'plop' and i'll renew it for you."
-          return console.log "Query to API returned #{JSON.stringify(err)}"
+          return
 
-        console.log "found #{response.items} events"
         CheckWetherEventsNeedReminderNow response.items, user if response.items > 0
 
   automate = ->
