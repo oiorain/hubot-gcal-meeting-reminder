@@ -122,7 +122,8 @@ module.exports = (robot) ->
     attendees = ""
     for att in event.attendees
       if !att.self and att.responseStatus != "declined" and !att.resource
-        attendees += "#{att.displayName ? att.displayName: att.email}, "
+        attendees += "#{att.displayName}, " if att.displayName
+        attendees += "#{att.email}, " if not att.displayName
     if event.start.dateTime # no dateTime if event is all day long
       start = new Date(event.start.dateTime)
       end = new Date(event.end.dateTime)
@@ -209,11 +210,11 @@ module.exports = (robot) ->
             messageUser user, "Oups... Looks like I lost your token and I didn't succeed in getting a replacement :cry:. Please say 'plop' and i'll renew it for you."
           return
 
-        if response.items.length > 0
+        if response.items and response.items.length > 0
           CheckWetherEventsNeedReminderNow response.items, user
 
   automate = ->
-    console.log "---- #{(new Date()).toISOString()}. users: #{users.toString().replace /,/, ", "}"
+    console.log "---- #{(new Date()).toISOString()}. users: #{users.toString().replace /,/, ', '}"
     if users.length > 0
       for user in users
         console.log "-- #{user}"
