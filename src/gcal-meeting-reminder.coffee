@@ -202,6 +202,5 @@ module.exports = (robot) ->
         calendar_args.timeMax = nowPlusMinutes(remind_me+1)
         findEventUpcomingEvents user
 
-  getUserListFromFile()
   setTimeout automate, 3000
   setInterval automate, 60000 # every minute :
