@@ -81,7 +81,7 @@ module.exports = (robot) ->
 
   setUserListToFile = ->
     try
-      fs.writeFile usersFile, users, (err) ->
+      fs.writeFile usersFile, users, { flag: 'wx' }, (err) ->
         throw err if err
     catch err
       console.log "couldnt write user list from the token file #{usersFile} file: #{err}"
@@ -209,16 +209,15 @@ module.exports = (robot) ->
   CheckWetherEventsNeedReminderNow = (events, user)->
     for e in events
       start = new Date(e.start.dateTime)
-      low_diff = Math.floor((args.timeMin.getTime() - start.getTime())/1000)
-      high_diff = Math.floor((args.timeMax.getTime() - start.getTime())/1000)
+      low_diff = Math.floor((calendar_args.timeMin.getTime() - start.getTime())/1000)
+      high_diff = Math.floor((calendar_args.timeMax.getTime() - start.getTime())/1000)
 
       if e.start.dateTime and e.attendees and low_diff == 0 and high_diff == 60 and e.status == "confirmed"
         console.log "Notify: #{JSON.stringify(e)}"
         sendReminder robot, user, e
 
-  findEventUpcomingEvents = (args) ->
+  findEventUpcomingEvents = (user) ->
     console.log "findEventUpcomingEvents"
-    user = args.user
     # reconstituing this for hubot-slack-google-auth
     msg =
       message:
@@ -229,8 +228,6 @@ module.exports = (robot) ->
       console.log "google:authenticate"
       console.log "google:authenticate error: #{JSON.stringify(err)}" if err?
       calendar_args.auth = oauth
-      calendar_args.timeMin = args.timeMin.toISOString()
-      calendar_args.timeMax = args.timeMax.toISOString()
 
       console.log "query for calendar_args: %s", calendar_args
 
@@ -255,10 +252,9 @@ module.exports = (robot) ->
       for user in users
         if user not in authRequired
           console.log "-- #{user}"
-          findEventUpcomingEvents
-            user: user
-            timeMin: nowPlusMinutes(remind_me)
-            timeMax: nowPlusMinutes(remind_me+1)
+          calendar_args.timeMin = nowPlusMinutes(remind_me)
+          calendar_args.timeMax = nowPlusMinutes(remind_me+1)
+          findEventUpcomingEvents user
 
   # getSettings
   getUserListFromFile()
