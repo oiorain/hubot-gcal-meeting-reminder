@@ -102,7 +102,6 @@ module.exports = (robot) ->
   confirmReminders = (args) ->
     user = args.user
     if user not in users
-      AddUserToReminderList user
       console.log " Has my user list been saved properly ? #{users.toString()}"
       messageUser user, "Alright, #{user}! I'll send your meeting reminders from now on.\nYou can stop anytime by telling me \"stop sending me meeting reminders\"."
     else
@@ -150,16 +149,17 @@ module.exports = (robot) ->
   #
   robot.respond /(plop|send me meeting reminders)/i, (msg) ->
     robot.emit 'google:authenticate', msg, (err, oauth) ->
-      console.error "google:authenticate returned %s", err if err?
+      console.error "google:authenticate returned #{JSON.stringify(err)}" if err?
+      AddUserToReminderList user
       confirmReminders { user: msg.message.user.name }
 
   robot.respond /(stop sending me meeting reminders)/i, (msg) ->
-    console.info "-> robot.reponse /stop sending me meeting reminders/ from #{msg.message.user.name}";
+    console.info "-> robot.reponse /stop sending me meeting reminders/ from #{msg.message.user.name}"
     removeUserFromReminderList msg.message.user.name
     msg.send "Alright, #{msg.message.user.name}. I won't send you reminders anymore."
 
   robot.respond /(who's getting reminders\?)/i, (msg) ->
-    console.info "-> robot.reponse /who's getting reminders\?/ from #{msg.message.user.name}";
+    console.info "-> robot.reponse /who's getting reminders\?/ from #{msg.message.user.name}"
     if users.length
       msg.send "I'm currently sending reminders to #{users.toString().replace /,/, ", "}."
     else
