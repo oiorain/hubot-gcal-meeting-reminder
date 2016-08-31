@@ -38,14 +38,16 @@ module.exports = (robot) ->
 
   # the number of minutes before an event the reminder happens
   remind_me = 3
-  # list of users asking for reminders
-  console.log "Found users in my brain! #{robot.brain.get 'usersGettingReminders'}"
-  users = robot.brain.get 'usersGettingReminders'
-  users = [] unless users
 
   #
   # Setting functions
   #
+
+  getUsersFromBrain = ->
+    # list of users asking for reminders
+    console.log "Found users in my brain! #{robot.brain.get 'usersGettingReminders'}"
+    users = robot.brain.get 'usersGettingReminders'
+    users = [] unless users
 
   # Add/remove user to reminder list
   AddUserToReminderList = (user) ->
@@ -207,5 +209,6 @@ module.exports = (robot) ->
         calendar_args.timeMax = nowPlusMinutes(remind_me+1)
         findEventUpcomingEvents user
 
-  setTimeout automate, 3000
+  setTimeout getUsersFromBrain, 3000
+  setTimeout automate, 5000
   setInterval automate, 60000 # every minute :
