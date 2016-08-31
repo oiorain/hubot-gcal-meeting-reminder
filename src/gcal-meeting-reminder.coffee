@@ -89,10 +89,10 @@ module.exports = (robot) ->
   # Add/remove user to reminder list
   AddUserToReminderList = (user) ->
     users.push user if user not in users
-    setUserListToFile
+    setUserListToFile()
   removeUserFromReminderList = (user) ->
     users.splice(users.indexOf(user), 1)
-    setUserListToFile
+    setUserListToFile()
 
   # Waiting for new token from user: add/remove to/from wait list
   AddUserToAuthRequired = (user) ->
@@ -217,6 +217,7 @@ module.exports = (robot) ->
         sendReminder robot, user, e
 
   findEventUpcomingEvents = (args) ->
+    console.log "findEventUpcomingEvents"
     user = args.user
     # reconstituing this for hubot-slack-google-auth
     msg =
@@ -225,6 +226,7 @@ module.exports = (robot) ->
           name: user
 
     robot.emit 'google:authenticate', msg, (err, oauth) ->
+      console.log "google:authenticate"
       console.log "google:authenticate #{JSON.stringify(err)}" if err?
       calendar_args.auth = oauth
       calendar_args.timeMin = args.timeMin.toISOString()
