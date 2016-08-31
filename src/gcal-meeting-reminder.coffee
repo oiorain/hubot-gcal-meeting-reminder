@@ -24,18 +24,7 @@
 #   {Robot,Adapter,TextMessage,User} = prequire 'hubot'
 
 module.exports = (robot) ->
-  fs = require 'fs'
-  readline = require 'readline'
   google = require 'googleapis'
-  googleAuth = require 'google-auth-library'
-
-  # the number of minutes before an event the reminder happens
-  remind_me = 3
-  # list of users asking for reminders
-  usersFile = process.cwd()+"/gcal-meeting-reminder.json"
-  fd = fs.openSync usersFile, 'w+'
-  users = []
-
   # arguments for Google Calendar query
   calendar_args =
     auth: null
@@ -47,37 +36,25 @@ module.exports = (robot) ->
     orderBy: 'startTime'
     timeZone: "utc"
 
+  # the number of minutes before an event the reminder happens
+  remind_me = 3
+  # list of users asking for reminders
+  console.log "Found users in my brain! #{robot.brain.get 'users'}"
+  users = robot.brain.get 'users'
+  users = [] unless users
+
   #
   # Setting functions
   #
 
-  getUserListFromFile = ->
-    try
-      fs.readFile usersFile, (err, content) ->
-        throw err if err
-        if content
-          console.log "Found content in file : #{JSON.stringify(content)}"
-          users = JSON.parse(content)
-          console.log "Found those user saved neatly: #{users.toString().replace /,/, ", "}"
-    catch err
-      console.log "couldnt retrieve user list from #{usersFile} file: #{err}"
-
-  setUserListToFile = ->
-    try
-      console.log "about to write this to file : #{JSON.stringify(users)}"
-      fs.write fd, JSON.stringify(users), (err) ->
-        throw err if err
-    catch err
-      console.log "couldnt write user list from the token file #{usersFile} file: #{err}"
-
   # Add/remove user to reminder list
   AddUserToReminderList = (user) ->
     users.push user if user not in users
-    setUserListToFile()
+    robot.brain.set 'users', users
 
   removeUserFromReminderList = (user) ->
     users.splice(users.indexOf(user), 1)
-    setUserListToFile()
+    robot.brain.set 'users', users
 
   #
   # Helper functions
