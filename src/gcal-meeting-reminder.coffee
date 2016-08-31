@@ -33,7 +33,7 @@ module.exports = (robot) ->
   remind_me = 3
   # list of users asking for reminders
   usersFile = process.cwd()+"/gcal-meeting-reminder.json"
-  fd = fs.openSync(usersFile, 'w+');
+  fd = fs.openSync usersFile, 'w+'
   users = []
 
   # arguments for Google Calendar query
@@ -153,8 +153,8 @@ module.exports = (robot) ->
   robot.respond /(plop|send me meeting reminders)/i, (msg) ->
     robot.emit 'google:authenticate', msg, (err, oauth) ->
       console.error "google:authenticate returned #{JSON.stringify(err)}" if err?
-      AddUserToReminderList msg.message.user.name
       confirmReminders msg.message.user.name
+      AddUserToReminderList msg.message.user.name
 
   robot.respond /(stop sending me meeting reminders)/i, (msg) ->
     console.info "-> robot.reponse /stop sending me meeting reminders/ from #{msg.message.user.name}"
