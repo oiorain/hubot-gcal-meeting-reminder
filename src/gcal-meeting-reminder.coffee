@@ -257,6 +257,6 @@ module.exports = (robot) ->
             timeMax: nowPlusMinutes(remind_me+1)
 
   # getSettings
-  getUserListFromFile
+  getUserListFromFile()
   setTimeout automate, 3000
   setInterval automate, 60000 # every minute :
