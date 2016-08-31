@@ -52,9 +52,10 @@ module.exports = (robot) ->
 
   getUserListFromFile = ->
     try
-      fs.readFile usersFile, (err, contents) ->
+      fs.readFile usersFile, (err, content) ->
         throw err if err
-        users = JSON.parse(contents)
+        console.log "Found content in file : #{JSON.stringify(content)}"
+        users = JSON.parse(content) if not content?.length
         console.log "Found those user saved neatly: #{users.toString().replace /,/, ", "}"
     catch err
       console.log "couldnt retrieve user list from #{usersFile} file: #{err}"
