@@ -40,7 +40,7 @@ module.exports = (robot) ->
   remind_me = 3
   # list of users asking for reminders
   console.log "Found users in my brain! #{robot.brain.get 'users'}"
-  users = robot.brain.get 'users'
+  users = robot.brain.get 'usersGettingReminders'
   users = [] unless users
 
   #
@@ -50,11 +50,15 @@ module.exports = (robot) ->
   # Add/remove user to reminder list
   AddUserToReminderList = (user) ->
     users.push user if user not in users
-    robot.brain.set 'users', users
+    console.log "check user in brain : #{robot.brain.get 'usersGettingReminders'}"
+    robot.brain.set 'usersGettingReminders', users
+    console.log "check user in brain after update: #{robot.brain.get 'usersGettingReminders'}"
 
   removeUserFromReminderList = (user) ->
     users.splice(users.indexOf(user), 1)
-    robot.brain.set 'users', users
+    console.log "check user in brain : #{robot.brain.get 'usersGettingReminders'}"
+    robot.brain.set 'usersGettingReminders', users
+    console.log "check user in brain after update: #{robot.brain.get 'usersGettingReminders'}"
 
   #
   # Helper functions
