@@ -70,6 +70,7 @@ module.exports = (robot) ->
   AddUserToReminderList = (user) ->
     users.push user if user not in users
     setUserListToFile()
+
   removeUserFromReminderList = (user) ->
     users.splice(users.indexOf(user), 1)
     setUserListToFile()
@@ -99,8 +100,7 @@ module.exports = (robot) ->
   #
   # talk methods
   #
-  confirmReminders = (args) ->
-    user = args.user
+  confirmReminders = (user) ->
     if user not in users
       console.log " Has my user list been saved properly ? #{users.toString()}"
       messageUser user, "Alright, #{user}! I'll send your meeting reminders from now on.\nYou can stop anytime by telling me \"stop sending me meeting reminders\"."
@@ -116,7 +116,6 @@ module.exports = (robot) ->
       }]
 
   sendReminder = (robot, user, event) ->
-    console.log "event : #{JSON.stringify(event)}"
     text = ""
     attendees = ""
     for att in event.attendees
@@ -150,8 +149,8 @@ module.exports = (robot) ->
   robot.respond /(plop|send me meeting reminders)/i, (msg) ->
     robot.emit 'google:authenticate', msg, (err, oauth) ->
       console.error "google:authenticate returned #{JSON.stringify(err)}" if err?
-      AddUserToReminderList user
-      confirmReminders { user: msg.message.user.name }
+      AddUserToReminderList msg.message.user.name
+      confirmReminders msg.message.user.name
 
   robot.respond /(stop sending me meeting reminders)/i, (msg) ->
     console.info "-> robot.reponse /stop sending me meeting reminders/ from #{msg.message.user.name}"
