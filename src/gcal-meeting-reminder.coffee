@@ -178,7 +178,7 @@ module.exports = (robot) ->
   robot.respond /(plop|send me meeting reminders)/i, (msg) ->
     AddUserToAuthRequired msg.message.user.name
     robot.emit 'google:authenticate', msg, (err, oauth) ->
-      console.log "oauth for #{msg.message.user.name}: err: #{JSON.stringify(err)} / oauth : #{JSON.stringify(oauth)}"
+      console.error "google:authenticate returned %s", err if err?
       confirmReminders { user: msg.message.user.name }
 
   robot.respond /(stop sending me meeting reminders)/i, (msg) ->
@@ -227,13 +227,15 @@ module.exports = (robot) ->
 
     robot.emit 'google:authenticate', msg, (err, oauth) ->
       console.log "google:authenticate"
-      console.log "google:authenticate #{JSON.stringify(err)}" if err?
+      console.log "google:authenticate error: #{JSON.stringify(err)}" if err?
       calendar_args.auth = oauth
       calendar_args.timeMin = args.timeMin.toISOString()
       calendar_args.timeMax = args.timeMax.toISOString()
 
+      console.log "query for calendar_args: %s", calendar_args
+
       google.calendar('v3').events.list calendar_args, (err, response) ->
-        console.log "found #{response.items} events"
+        console.log "found %s events", response.items.length
         if err?
           console.log "Query to API returned #{JSON.stringify(err)}"
           if err.code == 500
@@ -245,7 +247,7 @@ module.exports = (robot) ->
             messageUser user, "Oups... Looks like I lost your token and I didn't succeed in getting a replacement :cry:. Please say 'plop' and i'll renew it for you."
           return
 
-        CheckWetherEventsNeedReminderNow response.items, user if response.items > 0
+        CheckWetherEventsNeedReminderNow response.items, user if response.items.length > 0
 
   automate = ->
     console.log "---- #{(new Date()).toISOString()}. users: #{users.toString().replace /,/, ", "}. authRequired: #{authRequired.toString().replace /,/, ", "}"
