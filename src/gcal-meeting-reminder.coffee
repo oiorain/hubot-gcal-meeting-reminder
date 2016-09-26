@@ -226,10 +226,10 @@ module.exports = (robot) ->
           CheckWetherEventsNeedReminderNow response.items, user
 
   automate = ->
-    console.log "---- #{(new Date()).toISOString()}. users: #{users.toString().replace /,/, ', '}"
+    # console.log "---- #{(new Date()).toISOString()}. users: #{users.toString().replace /,/, ', '}"
     if users.length > 0
       for user in users
-        console.log "-- #{user}"
+        # console.log "-- #{user}"
         calendar_args.timeMin = nowPlusMinutes(remind_me)
         calendar_args.timeMax = nowPlusMinutes(remind_me+1)
         findEventUpcomingEvents user
