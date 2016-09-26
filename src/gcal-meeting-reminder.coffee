@@ -47,6 +47,7 @@ module.exports = (robot) ->
   getUsersFromBrain = ->
     # list of users asking for reminders
     console.log "Found users in my brain! #{robot.brain.get 'usersGettingReminders'}"
+    console.log "user variable has: #{users}"
     users = robot.brain.get 'usersGettingReminders' if robot.brain.get 'usersGettingReminders' != null
 
 
@@ -54,16 +55,20 @@ module.exports = (robot) ->
   AddUserToReminderList = (user) ->
     users.push user if user not in users
     console.log "check user in brain : #{robot.brain.get 'usersGettingReminders'}"
+    console.log "user variable has: #{users}"
     robot.brain.set 'usersGettingReminders', users
     robot.brain.save()
     console.log "check user in brain after update: #{robot.brain.get 'usersGettingReminders'}"
+    console.log "user variable has: #{users}"
 
   removeUserFromReminderList = (user) ->
     users.splice(users.indexOf(user), 1)
     console.log "check user in brain : #{robot.brain.get 'usersGettingReminders'}"
+    console.log "user variable has: #{users}"
     robot.brain.set 'usersGettingReminders', users
     robot.brain.save()
     console.log "check user in brain after update: #{robot.brain.get 'usersGettingReminders'}"
+    console.log "user variable has: #{users}"
 
   #
   # Helper functions
