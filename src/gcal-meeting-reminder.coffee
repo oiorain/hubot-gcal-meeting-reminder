@@ -1,5 +1,5 @@
 # Description
-#   A robot script that reminds you of upcoming meeting
+#   A robot script that reminds you of upcoming Google Calendar meeting on Slack
 #
 # Configuration:
 #   LIST_OF_ENV_VARS_TO_SET
@@ -77,6 +77,7 @@ module.exports = (robot) ->
   randomReaction =  ->
     reaction = [
       ":simple_smile:"
+      ":simple_smile::v:"
       ":muscle:"
       ":muscle: :simple_smile:"
       ":slightly_smiling_face:"
@@ -84,6 +85,29 @@ module.exports = (robot) ->
       ":rabbit:"
       ":cat2:"
       ":coffee:"
+      ":wink::point_up:"
+      ":sparkles:"
+      ":nerd_face:"
+      ":robot_face:"
+      ":information_desk_person:"
+      ":v:"
+      ":the_horns:"
+      ":nerd_face::the_horns:"
+      ":nerd_face::spock-hand:"
+      ":spock-hand:"
+      ":panda_face:"
+      ":panda_face::the_horns:"
+      ":unicorn_face:"
+      ":new_moon_with_face::full_moon_with_face:"
+      ":jack_o_lantern:"
+      ":dango:"
+      ":watermelon:"
+      ":pizza:"
+      ":telephone_receiver:"
+      ":phone:"
+      ":fax:"
+      ":bellhop_bell:"
+      ":crystal_ball:"
     ]
     reaction[Math.floor(Math.random() * (reaction.length))]
 
