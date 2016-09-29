@@ -40,7 +40,7 @@ module.exports = (robot) ->
   remind_me = 3
   users = []
   console.log "init> Found users in my brain? #{robot.brain.get 'usersGettingReminders'}"
-  Robot.Brain.SetAutoSave False
+  robot.Brain.SetAutoSave False
 
   #
   # Setting functions
