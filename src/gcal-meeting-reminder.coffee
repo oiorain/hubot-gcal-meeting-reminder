@@ -135,6 +135,7 @@ module.exports = (robot) ->
       content: [{
         pretext: message
       }]
+      fallback: message
 
   sendReminder = (robot, user, event) ->
     text = ""
