@@ -39,36 +39,38 @@ module.exports = (robot) ->
   # the number of minutes before an event the reminder happens
   remind_me = 3
   users = []
+  console.log "init> Found users in my brain? #{robot.brain.get 'usersGettingReminders'}"
+  Robot.Brain.SetAutoSave False
 
   #
   # Setting functions
   #
 
   getUsersFromBrain = ->
-    # list of users asking for reminders
-    console.log "Found users in my brain! #{robot.brain.get 'usersGettingReminders'}"
-    console.log "user variable has: #{users}"
+    # list of users asking for reminders stocked in Reddis DB
+    console.log "getUsersFromBrain> Found users in my brain! #{robot.brain.get 'usersGettingReminders'}"
     users = robot.brain.get 'usersGettingReminders' if robot.brain.get 'usersGettingReminders' != null
+    console.log "getUsersFromBrain> users = #{users}"
 
 
   # Add/remove user to reminder list
   AddUserToReminderList = (user) ->
+    console.log "AddUserToReminderList> robot.brain before adding: #{robot.brain.get 'usersGettingReminders'}"
+    console.log "AddUserToReminderList> users = #{users}"
     users.push user if user not in users
-    console.log "check user in brain : #{robot.brain.get 'usersGettingReminders'}"
-    console.log "user variable has: #{users}"
     robot.brain.set 'usersGettingReminders', users
     robot.brain.save()
-    console.log "check user in brain after update: #{robot.brain.get 'usersGettingReminders'}"
-    console.log "user variable has: #{users}"
+    console.log "AddUserToReminderList> robot.brain after adding: #{robot.brain.get 'usersGettingReminders'}"
+    console.log "AddUserToReminderList> users = #{users}"
 
   removeUserFromReminderList = (user) ->
+    console.log "removeUserFromReminderList> robot.brain before removing: #{robot.brain.get 'usersGettingReminders'}"
+    console.log "removeUserFromReminderList> users = #{users}"
     users.splice(users.indexOf(user), 1)
-    console.log "check user in brain : #{robot.brain.get 'usersGettingReminders'}"
-    console.log "user variable has: #{users}"
     robot.brain.set 'usersGettingReminders', users
     robot.brain.save()
-    console.log "check user in brain after update: #{robot.brain.get 'usersGettingReminders'}"
-    console.log "user variable has: #{users}"
+    console.log "removeUserFromReminderList> robot.brain after removing: #{robot.brain.get 'usersGettingReminders'}"
+    console.log "removeUserFromReminderList> users = #{users}"
 
   #
   # Helper functions
