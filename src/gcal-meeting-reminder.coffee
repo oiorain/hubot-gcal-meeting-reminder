@@ -50,9 +50,7 @@ module.exports = (robot) ->
   getUsersFromBrain = ->
     # list of users asking for reminders stocked in Reddis DB
     console.log "getUsersFromBrain> Found users in my brain! #{robot.brain.get 'usersGettingReminders'}"
-    if robot.brain.get 'usersGettingReminders' != null
-      console.log "oh!"
-      users = robot.brain.get 'usersGettingReminders'
+    users = robot.brain.get 'usersGettingReminders'
     console.log "getUsersFromBrain> users = #{users}"
 
 
