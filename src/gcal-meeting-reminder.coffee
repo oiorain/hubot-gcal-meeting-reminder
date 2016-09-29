@@ -39,8 +39,9 @@ module.exports = (robot) ->
   # the number of minutes before an event the reminder happens
   remind_me = 3
   users = []
-  console.log "init> Found users in my brain? #{robot.brain.get 'usersGettingReminders'}"
   robot.brain.setAutoSave false
+  console.log "init> Found users in my brain? #{robot.brain.get 'usersGettingReminders'}"
+
 
   #
   # Setting functions
@@ -49,7 +50,9 @@ module.exports = (robot) ->
   getUsersFromBrain = ->
     # list of users asking for reminders stocked in Reddis DB
     console.log "getUsersFromBrain> Found users in my brain! #{robot.brain.get 'usersGettingReminders'}"
-    users = robot.brain.get 'usersGettingReminders' if robot.brain.get 'usersGettingReminders' != null
+    if robot.brain.get 'usersGettingReminders' != null
+      console.log "oh!"
+      users = robot.brain.get 'usersGettingReminders'
     console.log "getUsersFromBrain> users = #{users}"
 
 
