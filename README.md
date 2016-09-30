@@ -1,14 +1,15 @@
 # hubot-gcal-meeting-reminder
 
-A hubot script that reminds you of upcoming meeting
+A hubot script that sends you reminders to Slack of the upcoming meetings you have on GoogleCalendar.
 
-See [`src/gcal-meeting-reminder.coffee`](src/gcal-meeting-reminder.coffee) for full documentation.
 
 ## Installation
 
-In hubot project repo, run:
+In [hubot](https://hubot.github.com/) project folder, run:
 
-`npm install hubot-gcal-meeting-reminder --save`
+```
+npm install hubot-gcal-meeting-reminder --save
+```
 
 Then add **hubot-gcal-meeting-reminder** to your `external-scripts.json`:
 
@@ -18,20 +19,14 @@ Then add **hubot-gcal-meeting-reminder** to your `external-scripts.json`:
 ]
 ```
 
-## Sample Interaction
 
-```
-user1>> hubot hello
-hubot>> hello!
-```
-
-## NPM Module
-
-https://www.npmjs.com/package/hubot-gcal-meeting-reminder
+We also use the hubot-slack-google-auth to handle authentification to Google via Slack.
 
 
+## Notes on using Heroku to run hubot
 
-Settings:
+If you are running your hubot instance on Heroku, you might want to add the [hubot-redis-brain]() package to your hubot instance and enable the `Redis To Go` addon to Heroku ressources. Heroku's instance is restarted automatically everyday or so (even paid accounts) so it will erase your memory each time. A bot with amnesia is only that useful...
 
-upload the result of your newly setup app to gcal-meeting-reminder.json
-explain format needs web:
+
+## more info
+See [`src/gcal-meeting-reminder.coffee`](src/gcal-meeting-reminder.coffee) for full documentation.
