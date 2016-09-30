@@ -2,6 +2,17 @@
 
 A hubot script that sends you reminders to Slack of the upcoming meetings you have on GoogleCalendar.
 
+## Use
+
+This package adds 3 commands to hubot:
+
+- `send me meeting reminders` :  the bot enable reminders for you
+
+- `stop sending me meeting reminders` : the bot disable reminders for you
+
+- `who's getting reminders?` : the bot informs you of the list of users who are currently getting reminders.
+
+the commands are optimized to be used as direct message to your bot on Slack.
 
 ## Installation
 
@@ -19,12 +30,13 @@ Then add **hubot-gcal-meeting-reminder** to your `external-scripts.json`:
 ]
 ```
 
-
-We also use the [hubot-slack-google-auth](https://github.com/Skookum/hubot-slack-google-auth) to handle authentification to Google via Slack which requires a little bit of setup so be sure to add it to your hubot configuration:
+#### Auth
+We rely the [hubot-slack-google-auth](https://github.com/Skookum/hubot-slack-google-auth) to handle authentification to Google via Slack. To install it:
 
 ```
 npm install hubot-slack-google-auth --save
 ```
+There's a couple of vars to setup on this plugin's side as explained in the 'Configuration' paragraph of their README.
 
 
 ## Notes on using Heroku to run hubot

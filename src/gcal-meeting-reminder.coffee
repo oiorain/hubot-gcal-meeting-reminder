@@ -180,7 +180,7 @@ module.exports = (robot) ->
   robot.respond /(who's getting reminders\?)/i, (msg) ->
     console.info "-> robot.reponse /who's getting reminders\?/ from #{msg.message.user.name}"
     if users.length
-      msg.send "I'm currently sending reminders to #{users.toString().replace /,/, ", "}."
+      msg.send "I'm currently sending reminders to #{users.toString().replace /,/g, ", "}."
     else
       msg.send "I'm not currently sending reminders to anyone. :disappointed:"
 
