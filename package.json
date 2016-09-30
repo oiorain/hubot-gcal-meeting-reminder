@@ -14,8 +14,7 @@
   },
   "dependencies": {
     "google-auth-library": "^0.9.8",
-    "googleapis": "^8.2.0",
-    "hubot-slack-google-auth": "^0.1.1"
+    "googleapis": "^8.2.0"
   },
   "peerDependencies": {
     "hubot": "2.x"
