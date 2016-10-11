@@ -204,7 +204,7 @@ module.exports = (robot) ->
       high_diff = Math.floor((calendar_args.timeMax.getTime() - start.getTime())/1000)
 
       # status at the root of the event data concerns only owner
-      for att in event.attendees
+      for att in e.attendees
         return if att.self and att.responseStatus == "declined"
 
       if e.start.dateTime and e.attendees and low_diff == 0 and high_diff == 60
