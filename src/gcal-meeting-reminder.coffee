@@ -203,7 +203,11 @@ module.exports = (robot) ->
       low_diff = Math.floor((calendar_args.timeMin.getTime() - start.getTime())/1000)
       high_diff = Math.floor((calendar_args.timeMax.getTime() - start.getTime())/1000)
 
-      if e.start.dateTime and e.attendees and low_diff == 0 and high_diff == 60 and e.status == "confirmed"
+      # status at the root of the event data concerns only owner
+      for att in event.attendees
+        return if att.self and att.responseStatus == "declined"
+
+      if e.start.dateTime and e.attendees and low_diff == 0 and high_diff == 60
         console.log "Notify: #{JSON.stringify(e)}"
         sendReminder robot, user, e
 
