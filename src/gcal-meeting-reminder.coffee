@@ -199,15 +199,17 @@ module.exports = (robot) ->
   # not creator.self = someone else created the event
   CheckWetherEventsNeedReminderNow = (events, user)->
     for e in events
+      declined = false
       start = new Date(e.start.dateTime)
       low_diff = Math.floor((calendar_args.timeMin.getTime() - start.getTime())/1000)
       high_diff = Math.floor((calendar_args.timeMax.getTime() - start.getTime())/1000)
 
       # status at the root of the event data concerns only owner
       for att in e.attendees
-        return if att.self and att.responseStatus == "declined"
+        if att.self and att.responseStatus == "declined"
+          declined = true
 
-      if e.start.dateTime and e.attendees and low_diff == 0 and high_diff == 60
+      if declined == false and e.start.dateTime and e.attendees and low_diff == 0 and high_diff == 60
         console.log "Notify: #{JSON.stringify(e)}"
         sendReminder robot, user, e
 
