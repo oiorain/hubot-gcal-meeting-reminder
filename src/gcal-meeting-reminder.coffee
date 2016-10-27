@@ -47,29 +47,20 @@ module.exports = (robot) ->
 
   getUsersFromBrain = ->
     # list of users asking for reminders stocked in Reddis DB
-    console.log "getUsersFromBrain> Found users in my brain! #{robot.brain.get 'usersGettingReminders'}"
     users = robot.brain.get 'usersGettingReminders'
     console.log "getUsersFromBrain> users = #{users}"
 
 
   # Add/remove user to reminder list
   AddUserToReminderList = (user) ->
-    console.log "AddUserToReminderList> robot.brain before adding: #{robot.brain.get 'usersGettingReminders'}"
-    console.log "AddUserToReminderList> users = #{users}"
     users.push user if user not in users
     robot.brain.set 'usersGettingReminders', users
     robot.brain.save()
-    console.log "AddUserToReminderList> robot.brain after adding: #{robot.brain.get 'usersGettingReminders'}"
-    console.log "AddUserToReminderList> users = #{users}"
 
   removeUserFromReminderList = (user) ->
-    console.log "removeUserFromReminderList> robot.brain before removing: #{robot.brain.get 'usersGettingReminders'}"
-    console.log "removeUserFromReminderList> users = #{users}"
     users.splice(users.indexOf(user), 1)
     robot.brain.set 'usersGettingReminders', users
     robot.brain.save()
-    console.log "removeUserFromReminderList> robot.brain after removing: #{robot.brain.get 'usersGettingReminders'}"
-    console.log "removeUserFromReminderList> users = #{users}"
 
   #
   # Helper functions
@@ -218,7 +209,11 @@ module.exports = (robot) ->
           name: user
 
     robot.emit 'google:authenticate', msg, (err, oauth) ->
-      console.log "google:authenticate error: #{JSON.stringify(err)}" if err
+      if err
+        console.log "google:authenticate error: #{JSON.stringify(err)} for #{user}"
+        messageUser "marion", "google:authenticate error: #{JSON.stringify(err)} for #{user}"
+        return
+
       calendar_args.auth = oauth
 
       google.calendar('v3').events.list calendar_args, (err, response) ->
